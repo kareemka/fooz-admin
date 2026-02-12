@@ -17,6 +17,7 @@ const navItems = [
     { name: 'الطلبات', path: '/orders', icon: 'shopping_cart' },
     { name: 'المعرض', path: '/gallery', icon: 'perm_media' },
     { name: 'الأقسام', path: '/categories', icon: 'category' },
+    { name: 'الألوان', path: '/colors', icon: 'palette' },
     { name: 'البنرات', path: '/banners', icon: 'view_carousel' },
     { name: 'أكواد الخصم', path: '/coupons', icon: 'confirmation_number' },
     { name: 'الأسئلة الشائعة', path: '/faq', icon: 'quiz' },

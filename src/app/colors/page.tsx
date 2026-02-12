@@ -4,19 +4,8 @@ import { useState } from 'react';
 import { gql } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { AdminLayout } from '@/components/layout/admin-layout';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Loader2,
-} from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -33,15 +22,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { GallerySelector } from '@/components/gallery/gallery-selector';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const GET_COLORS = gql`
     query GetColors($search: String, $skip: Int, $take: Int) {
@@ -89,8 +72,6 @@ const BULK_DELETE_COLORS = gql`
 `;
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
-
-import { cn } from '@/lib/utils';
 
 export default function ColorsPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -203,399 +184,298 @@ export default function ColorsPage() {
 
     return (
         <AdminLayout>
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-right">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-4xl font-black tracking-tight text-white font-display uppercase italic text-right">الألوان</h1>
-                        <p className="text-gray-400 font-medium text-lg text-right">تخصيص لوحة الألوان للمنتجات بهوية نيون متطورة.</p>
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-white mb-1">الألوان</h1>
+                        <p className="text-gray-400 text-sm">تخصيص لوحة الألوان للمنتجات</p>
                     </div>
                     <div className="flex items-center gap-4">
                         {selectedIds.length > 0 && (
                             <Button
                                 variant="destructive"
-                                className="rounded-2xl px-8 h-14 shadow-neon-sm bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 font-black text-lg transition-all"
+                                className="rounded-xl px-6 h-12 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20"
                                 onClick={() => setIsBulkDeleteDialogOpen(true)}
                             >
                                 <span className="material-symbols-outlined ml-2">delete_sweep</span>
                                 حذف ({selectedIds.length})
                             </Button>
                         )}
-                        <Button onClick={openCreateDialog} className="gaming-hover bg-primary hover:bg-primary-dark text-black font-black rounded-2xl px-10 h-16 shadow-neon border-none text-xl font-display uppercase italic">
-                            <span className="material-symbols-outlined ml-3 text-2xl">palette</span>
-                            لون نيون جديد
+                        <Button onClick={openCreateDialog} className="bg-primary hover:bg-primary-hover text-background-dark font-bold rounded-xl px-6 h-12 shadow-neon transition-all">
+                            <span className="material-symbols-outlined ml-2">palette</span>
+                            إضافة لون جديد
                         </Button>
                     </div>
                 </div>
 
-                <div className="glass-panel p-8 rounded-[2.5rem] border border-white/5 flex flex-col md:flex-row gap-8 items-center shadow-glass">
-                    <div className="relative flex-1 w-full group">
-                        <span className="material-symbols-outlined absolute right-5 top-1/2 h-6 w-6 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">search</span>
-                        <Input
-                            placeholder="ابحث عن أي لون في النظام..."
+                {/* Filters */}
+                <div className="glass-panel rounded-2xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full lg:w-1/3 group">
+                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <span className="material-symbols-outlined text-gray-500">search</span>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="بحث عن لون..."
                             value={search}
                             onChange={(e) => {
                                 setSearch(e.target.value);
                                 setPage(0);
                             }}
-                            className="pr-16 bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 rounded-3xl h-16 text-xl transition-all font-bold placeholder:text-gray-600"
+                            className="w-full bg-[#151d19] border border-glass-border text-white text-sm rounded-xl focus:ring-1 focus:ring-primary focus:border-primary block pr-11 pl-4 py-3 placeholder-gray-600 transition-all"
                         />
                     </div>
-                    <div className="flex items-center gap-6 bg-white/5 p-3 rounded-[1.5rem] border border-white/10 px-8 h-16 shadow-inner text-lg">
-                        <span className="text-gray-400 font-black uppercase tracking-widest text-xs font-display">Show</span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">عرض</span>
                         <Select value={take.toString()} onValueChange={(val) => {
                             setTake(parseInt(val));
                             setPage(0);
                         }}>
-                            <SelectTrigger className="w-24 bg-transparent border-none focus:ring-0 text-white font-black text-xl font-display">
+                            <SelectTrigger className="w-24 h-12 bg-[#151d19] border-glass-border text-white rounded-xl">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="glass-panel border-white/10 rounded-2xl overflow-hidden shadow-glass p-2">
+                            <SelectContent className="glass-panel border-white/10 text-white rounded-xl">
                                 {ITEMS_PER_PAGE_OPTIONS.map(opt => (
-                                    <SelectItem key={opt} value={opt.toString()} className="hover:bg-primary/20 focus:bg-primary/20 transition-all rounded-xl p-3 font-bold">{opt}</SelectItem>
+                                    <SelectItem key={opt} value={opt.toString()}>{opt}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
                 </div>
 
-                <div className="glass-panel rounded-[3rem] overflow-hidden border border-white/5 shadow-glass text-right">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="border-b border-white/5 hover:bg-transparent bg-white/[0.02]">
-                                <TableHead className="w-24 text-center">
-                                    <div className="flex justify-center">
+                {/* Table */}
+                <div className="glass-panel rounded-2xl overflow-hidden border border-glass-border">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-right border-collapse">
+                            <thead>
+                                <tr className="bg-[#121c18] border-b border-glass-border text-gray-400 text-xs uppercase tracking-wider font-semibold">
+                                    <th className="w-12 py-5 text-center px-6">
                                         <input
                                             type="checkbox"
-                                            className="rounded-lg border-white/20 accent-primary size-6 cursor-pointer bg-white/5 transition-all hover:scale-110"
+                                            className="rounded border-white/20 accent-primary size-5 cursor-pointer bg-surface-dark"
                                             checked={selectedIds.length === colors.length && colors.length > 0}
                                             onChange={toggleSelectAll}
                                         />
-                                    </div>
-                                </TableHead>
-                                <TableHead className="text-right py-8 font-black text-gray-400 uppercase tracking-[0.3em] text-[10px] font-display">Preview</TableHead>
-                                <TableHead className="text-right py-8 font-black text-gray-400 uppercase tracking-[0.3em] text-[10px] font-display">Accent Name</TableHead>
-                                <TableHead className="text-left py-8 font-black text-gray-400 uppercase tracking-[0.3em] text-[10px] pr-12 font-display">Interface</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-96 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-6">
-                                            <div className="relative">
-                                                <Loader2 className="h-20 w-20 animate-spin text-primary" />
-                                                <div className="absolute inset-0 blur-3xl bg-primary/30 animate-pulse"></div>
+                                    </th>
+                                    <th className="px-6 py-5">المعاينة</th>
+                                    <th className="px-6 py-5">اسم اللون</th>
+                                    <th className="px-6 py-5 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-glass-border text-gray-300">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={4} className="h-96 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-4">
+                                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                                                <p className="text-primary font-medium">جاري جلب البيانات...</p>
                                             </div>
-                                            <p className="text-primary font-black animate-pulse text-xl uppercase tracking-[0.4em] font-display italic">Syncing Colors...</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : colors.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-96 text-center">
-                                        <div className="flex flex-col items-center justify-center gap-10">
-                                            <div className="bg-white/5 p-12 rounded-[2.5rem] border border-white/5 shadow-inner group">
-                                                <span className="material-symbols-outlined text-8xl text-gray-500/20 group-hover:text-primary/20 transition-colors duration-700">palette</span>
+                                        </td>
+                                    </tr>
+                                ) : colors.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="h-96 text-center text-gray-500">
+                                            <div className="flex flex-col items-center justify-center gap-6">
+                                                <div className="bg-white/5 p-8 rounded-2xl border border-white/5">
+                                                    <span className="material-symbols-outlined text-6xl text-gray-500/20">palette</span>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <p className="text-xl font-bold text-white">لا توجد ألوان</p>
+                                                    <p className="text-gray-400">ابدأ بإضافة لون جديد.</p>
+                                                </div>
                                             </div>
-                                            <div className="space-y-4">
-                                                <p className="text-3xl font-black text-white font-display uppercase italic">لا توجد ألوان</p>
-                                                <p className="text-gray-400 text-lg font-medium">ابدأ بإضافة لون جديد لتخصيص منتجاتك بهوية نيون.</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                colors.map((color: any) => (
-                                    <TableRow
-                                        key={color.id}
-                                        className={cn(
-                                            "group border-b border-white/5 transition-all duration-500",
-                                            selectedIds.includes(color.id) ? "bg-primary/5 shadow-inner-glass" : "hover:bg-white/[0.04]"
-                                        )}
-                                    >
-                                        <TableCell className="text-center">
-                                            <div className="flex justify-center">
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    colors.map((color: any) => (
+                                        <tr
+                                            key={color.id}
+                                            className={cn(
+                                                "group hover:bg-white/5 transition-colors border-b border-glass-border cursor-pointer",
+                                                selectedIds.includes(color.id) && "bg-primary/5"
+                                            )}
+                                            onClick={() => openEditDialog(color)}
+                                        >
+                                            <td className="text-center py-4 px-6" onClick={(e) => e.stopPropagation()}>
                                                 <input
                                                     type="checkbox"
-                                                    className="rounded-lg border-white/20 accent-primary size-6 cursor-pointer bg-white/5 transition-transform group-hover:scale-125 duration-500"
+                                                    className="rounded border-white/20 accent-primary size-5 cursor-pointer bg-surface-dark"
                                                     checked={selectedIds.includes(color.id)}
                                                     onChange={() => toggleSelect(color.id)}
                                                 />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="py-8">
-                                            {color.image ? (
-                                                <div className="relative group/img size-20">
-                                                    <div className="absolute inset-0 bg-primary/20 blur-2xl opacity-0 group-hover/img:opacity-100 transition-opacity duration-700"></div>
-                                                    <img src={color.image} alt={color.name} className="size-full rounded-2xl object-cover shadow-neon-sm border border-white/10 group-hover/img:scale-110 transition-transform duration-700 relative z-10" />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="h-14 w-14 rounded-xl overflow-hidden border border-glass-border group-hover:border-primary/50 transition-colors bg-black shadow-inner">
+                                                    {color.image ? (
+                                                        <img src={color.image} alt={color.name} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center text-gray-700 bg-surface-dark">
+                                                            <span className="material-symbols-outlined text-2xl">palette</span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <div className="size-20 rounded-2xl bg-[#0A0B10] flex items-center justify-center border border-white/5 group-hover:border-primary/30 transition-all duration-500 shadow-inner group">
-                                                    <span className="material-symbols-outlined text-4xl text-gray-700 group-hover:text-primary transition-colors">palette</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-bold text-lg group-hover:text-primary transition-colors">{color.name}</span>
+                                                    <span className="text-gray-500 text-[10px] font-mono mt-1">ID: {color.id.substring(0, 8)}</span>
                                                 </div>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col">
-                                                <span className="font-black text-2xl text-white font-display uppercase italic">{color.name}</span>
-                                                <span className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                                                    <span className="size-1.5 rounded-full bg-primary/40"></span>
-                                                    ID: {color.id.substring(0, 12)}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-left py-8 pr-12">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-14 w-14 p-0 rounded-2xl hover:bg-primary/20 transition-all group-hover:border-primary/20 border border-transparent bg-white/5">
-                                                        <span className="material-symbols-outlined text-3xl text-gray-400 group-hover:text-primary transition-colors">more_horiz</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="start" className="glass-panel border-white/10 min-w-[240px] rounded-[1.5rem] shadow-glass p-3 animate-in zoom-in-95 duration-200">
-                                                    <DropdownMenuLabel className="opacity-40 text-[10px] font-black uppercase tracking-[0.3em] text-right p-4 font-display">Color Matrix Options</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => openEditDialog(color)} className="p-4 rounded-xl cursor-pointer flex items-center justify-end font-black text-white hover:bg-primary/[0.15] focus:bg-primary/[0.15] transition-all gap-4 group text-lg font-display uppercase italic">
-                                                        Edit Color Data
-                                                        <span className="material-symbols-outlined text-2xl text-primary group-hover:rotate-12 transition-transform">edit_square</span>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator className="bg-white/5 my-2" />
-                                                    <DropdownMenuItem
-                                                        className="p-4 rounded-xl text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer flex items-center justify-end font-black hover:bg-red-500/10 transition-all gap-4 group text-lg font-display uppercase italic"
-                                                        onClick={() => setDeleteId(color.id)}
+                                            </td>
+                                            <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex items-center justify-center gap-1 transition-opacity">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openEditDialog(color);
+                                                        }}
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                                                     >
-                                                        Delete Sequence
-                                                        <span className="material-symbols-outlined text-2xl group-hover:scale-125 transition-transform">delete_forever</span>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {/* Pagination Controls */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-8 py-10 border-t border-white/5">
-                    <div className="text-xs font-black text-gray-500 order-2 sm:order-1 uppercase tracking-[0.3em] font-display italic text-right">
-                        Visualizing <span className="text-primary brightness-150 inline-block mx-2">{colors.length}</span> of <span className="text-white">{totalCount}</span> Accent Units
+                                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                    </button>
+                                                    <button
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteId(color.id);
+                                                        }}
+                                                    >
+                                                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
-                    <div className="flex items-center gap-6 order-1 sm:order-2">
-                        <Button
-                            variant="ghost"
-                            onClick={() => setPage((p) => Math.max(0, p - 1))}
-                            disabled={page === 0 || loading}
-                            className="rounded-2xl h-14 px-8 text-white hover:bg-white/10 disabled:opacity-30 transition-all font-black text-lg uppercase font-display italic"
-                        >
-                            &larr; Prev
-                        </Button>
 
-                        <div className="flex items-center gap-3">
-                            {(() => {
-                                const windowSize = 5;
-                                const startPage = Math.max(0, Math.min(page - 2, Math.max(0, totalPages - windowSize)));
-                                const endPage = Math.min(totalPages, startPage + windowSize);
-
-                                return Array.from({ length: Math.max(1, endPage - startPage) }).map((_, i) => {
-                                    const pageNum = totalPages > 0 ? startPage + i : 0;
-                                    return (
-                                        <Button
-                                            key={pageNum}
-                                            variant="ghost"
-                                            onClick={() => setPage(pageNum)}
-                                            className={cn(
-                                                "size-14 rounded-2xl font-black text-xl transition-all border font-display italic",
-                                                page === pageNum
-                                                    ? "bg-primary text-black border-primary shadow-neon scale-110"
-                                                    : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-                                            )}
-                                        >
-                                            {pageNum + 1}
-                                        </Button>
-                                    );
-                                });
-                            })()}
+                    {/* Pagination */}
+                    <div className="bg-[#121c18] border-t border-glass-border px-6 py-4 flex items-center justify-between">
+                        <div className="text-gray-500 text-sm">
+                            عرض <span className="font-bold text-white">{Math.min(totalCount, page * take + 1)}</span> إلى <span className="font-bold text-white">{Math.min(totalCount, (page + 1) * take)}</span> من <span className="font-bold text-white">{totalCount}</span> لون
                         </div>
-
-                        <Button
-                            variant="ghost"
-                            onClick={() => setPage((p) => Math.min(Math.max(0, totalPages - 1), p + 1))}
-                            disabled={page >= Math.max(0, totalPages - 1) || loading}
-                            className="rounded-2xl h-14 px-8 text-white hover:bg-white/10 disabled:opacity-30 transition-all font-black text-lg uppercase font-display italic"
-                        >
-                            Next &rarr;
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                                disabled={page === 0 || loading}
+                                className="px-3 py-1.5 rounded-lg border border-glass-border bg-[#1b2823] text-white hover:bg-[#273a33] disabled:opacity-50"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                            </button>
+                            {Array.from({ length: Math.min(3, totalPages) }).map((_, i) => (
+                                <button
+                                    key={i}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg font-bold transition-all",
+                                        page === i
+                                            ? 'bg-primary text-[#0f1614]'
+                                            : 'border border-glass-border bg-[#1b2823] text-gray-400 hover:text-white hover:bg-[#273a33]'
+                                    )}
+                                    onClick={() => setPage(i)}
+                                    disabled={loading}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            {totalPages > 3 && <span className="text-gray-500">...</span>}
+                            <button
+                                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                                disabled={page >= totalPages - 1 || loading}
+                                className="px-3 py-1.5 rounded-lg border border-glass-border bg-[#1b2823] text-white hover:bg-[#273a33] disabled:opacity-50"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="border-white/10 max-w-3xl rounded-[3rem] p-0 overflow-hidden text-right flex flex-col">
-                    <div className="p-10 flex-1 overflow-y-auto">
-                        <DialogHeader className="pb-6 border-b border-white/5 flex flex-col items-end relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[80px] -mr-32 -mt-32"></div>
-                            <DialogTitle className="text-4xl font-black text-white font-display flex items-center flex-row-reverse gap-6 relative z-10 uppercase italic">
-                                <div className="bg-primary/20 p-4 rounded-[1.5rem] border border-primary/20 shadow-neon-sm">
-                                    <span className="material-symbols-outlined text-4xl text-primary">palette</span>
-                                </div>
-                                {editingColor ? 'Edit Visual Identity' : 'Create New Accent'}
+                <DialogContent className="border-white/10 text-white max-w-2xl rounded-3xl p-0 shadow-glass overflow-hidden flex flex-col">
+                    <div className="p-8 flex-1 overflow-y-auto">
+                        <DialogHeader className="text-right pb-6 border-b border-white/5">
+                            <DialogTitle className="text-2xl font-black">
+                                {editingColor ? 'تعديل اللون' : 'إضافة لون جديد'}
                             </DialogTitle>
-                            <DialogDescription className="text-gray-400 font-medium text-lg pt-4 pr-1 relative z-10 text-right">
-                                Configure the product color parameters to update the visual matrix.
-                            </DialogDescription>
+                            <DialogDescription className="text-gray-400 font-medium">أدخل تفاصيل اللون أدناه ليتم تحديثه في المتجر.</DialogDescription>
                         </DialogHeader>
 
-                        <div className="p-10 space-y-12">
-                            <div className="space-y-4 text-right">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] flex items-center justify-end gap-3 font-display italic">
-                                    <span className="h-px w-10 bg-primary/40"></span>
-                                    ACCENT NAME
-                                </label>
+                        <div className="space-y-6 py-6 text-right">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">اسم اللون</label>
                                 <Input
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="e.g., PHANTOM BLUE, TOXIC RED..."
-                                    className="rounded-2xl bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 px-8 h-16 text-2xl font-black text-white uppercase placeholder:text-gray-700 placeholder:italic font-display"
+                                    placeholder="مثال: أحمر، أزرق..."
+                                    className="rounded-xl bg-[#151d19] border-white/10 text-white pr-4 h-12 focus:border-primary/50 transition-colors"
                                 />
                             </div>
 
-                            <div className="space-y-6 text-right">
-                                <label className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] flex items-center justify-end gap-3 font-display italic">
-                                    <span className="h-px w-10 bg-primary/40"></span>
-                                    VISUAL PREVIEW ASSET
-                                </label>
-
-                                <div className="p-2 rounded-[2.5rem] bg-[#0A0B10] border border-white/5 shadow-inner-glass min-h-[300px] flex items-center justify-center relative group overflow-hidden">
-                                    {image ? (
-                                        <div className="relative size-full rounded-[2rem] overflow-hidden border border-white/10 shadow-glass group/asset">
-                                            <img src={image} alt="Preview" className="w-full h-[300px] object-cover transition-transform duration-1000 group-hover/asset:scale-110" />
-                                            <div className="absolute inset-0 bg-black/70 backdrop-blur-md opacity-0 group-hover/asset:opacity-100 transition-all duration-500 flex items-center justify-center">
-                                                <Button
-                                                    variant="destructive"
-                                                    className="rounded-2xl h-20 px-12 shadow-neon flex items-center gap-4 bg-red-500 border-none font-black text-xl font-display uppercase italic transition-transform hover:scale-110"
-                                                    onClick={() => setImage('')}
-                                                >
-                                                    <span className="material-symbols-outlined text-3xl">delete</span>
-                                                    Purge Asset
-                                                </Button>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">معاينة اللون</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-4">
+                                        <div className="border border-dashed border-white/10 rounded-2xl p-4 bg-white/5">
+                                            <GallerySelector onSelect={setImage} selectedUrl={image} />
+                                        </div>
+                                        <Input
+                                            value={image}
+                                            onChange={(e) => setImage(e.target.value)}
+                                            placeholder="رابط الصورة المباشر..."
+                                            className="rounded-xl bg-[#151d19] border-white/10 text-white h-10 text-xs text-left pr-4"
+                                            dir="ltr"
+                                        />
+                                    </div>
+                                    <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 bg-[#151d19] shadow-neon-sm">
+                                        {image ? (
+                                            <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-700">
+                                                <span className="material-symbols-outlined text-4xl opacity-20">palette</span>
+                                                <span className="text-xs font-bold opacity-30">لا توجد صورة</span>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="w-full h-[300px] border-2 border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center gap-6 group-hover:border-primary/30 transition-all duration-700 bg-white/[0.02]">
-                                            <GallerySelector onSelect={setImage} selectedUrl={image}>
-                                                <div className="flex flex-col items-center gap-6 cursor-pointer group/btn p-10">
-                                                    <div className="bg-white/5 p-8 rounded-full border border-white/5 group-hover/btn:scale-110 group-hover/btn:bg-primary/10 transition-all duration-500 shadow-inner">
-                                                        <span className="material-symbols-outlined text-7xl text-gray-500/20 group-hover/btn:text-primary transition-colors">image</span>
-                                                    </div>
-                                                    <div className="text-center space-y-2">
-                                                        <p className="text-xl font-black text-gray-400 group-hover/btn:text-white transition-colors font-display uppercase italic tracking-widest text-right">Open Visual Archive</p>
-                                                        <p className="text-sm font-bold text-gray-600 text-right text-right">Drag or click to select color texture</p>
-                                                    </div>
-                                                </div>
-                                            </GallerySelector>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="relative group">
-                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-gray-600 group-focus-within:text-primary transition-colors">link</span>
-                                    <Input
-                                        value={image}
-                                        onChange={(e) => setImage(e.target.value)}
-                                        placeholder="OR INPUT SOURCE DIRECTORY (URL)..."
-                                        className="rounded-2xl bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 pr-16 h-16 font-black text-gray-400 uppercase tracking-widest font-display text-sm"
-                                    />
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <DialogFooter className="p-10 pt-6 border-t border-white/5 flex flex-row-reverse gap-6">
-                        <Button
-                            onClick={handleSubmit}
-                            disabled={isCreating || isUpdating || !name}
-                            className="bg-primary hover:bg-primary-dark text-black font-black rounded-2xl h-20 flex-1 shadow-neon border-none text-2xl gaming-hover font-display uppercase italic"
-                        >
-                            {(isCreating || isUpdating) ? (
-                                <div className="flex items-center gap-4">
-                                    <Loader2 className="h-8 w-8 animate-spin" />
-                                    SYNCING...
-                                </div>
-                            ) : editingColor ? (
-                                <div className="flex items-center gap-4">
-                                    Update Identity
-                                    <span className="material-symbols-outlined text-3xl">terminal</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-4">
-                                    Commit Color
-                                    <span className="material-symbols-outlined text-3xl">add_circle</span>
-                                </div>
-                            )}
+                    <DialogFooter className="flex-row-reverse gap-3 p-8 border-t border-white/5">
+                        <Button onClick={handleSubmit} disabled={isCreating || isUpdating} className="flex-1 h-12 bg-primary hover:bg-primary/80 text-black font-black rounded-xl shadow-neon border-none transition-all active:scale-95">
+                            {(isCreating || isUpdating) ? <Loader2 className="animate-spin" /> : 'حفظ التغييرات'}
                         </Button>
-                        <Button variant="ghost" onClick={closeDialog} className="rounded-2xl h-20 flex-1 text-white border border-white/5 hover:bg-white/10 font-black text-xl font-display uppercase italic">Cancel</Button>
+                        <Button variant="ghost" onClick={closeDialog} className="flex-1 h-12 rounded-xl text-gray-400 font-bold border border-white/10 hover:bg-white/5">إلغاء</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
             <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-                <DialogContent className="border-red-500/20 max-w-lg rounded-[3rem] p-0 text-right shadow-glass overflow-hidden relative flex flex-col">
-                    <div className="p-10 flex-1 overflow-y-auto">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-[50px] -mr-16 -mt-16 animate-pulse"></div>
-                        <DialogHeader className="flex flex-col items-end gap-6 relative z-10">
-                            <div className="size-24 bg-red-500/10 rounded-[2rem] border border-red-500/20 flex items-center justify-center shadow-neon-sm mx-auto group">
-                                <span className="material-symbols-outlined text-5xl text-red-500 group-hover:scale-125 transition-transform duration-500">warning</span>
-                            </div>
-                            <div className="space-y-3 text-center w-full">
-                                <DialogTitle className="text-4xl font-black text-white font-display uppercase italic">Terminal Warning</DialogTitle>
-                                <DialogDescription className="text-gray-400 font-medium text-lg pt-2 leading-relaxed">
-                                    Are you certain? This action will permanently erase the color sequence from the main database.
-                                </DialogDescription>
-                            </div>
-                        </DialogHeader>
+                <DialogContent className="border-red-500/20 text-white max-w-md rounded-3xl p-8 shadow-glass text-center">
+                    <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 text-red-500 border border-red-500/20">
+                        <span className="material-symbols-outlined text-3xl">delete</span>
                     </div>
-                    <DialogFooter className="p-12 border-t border-white/5 flex gap-6 relative z-10">
-                        <Button variant="ghost" onClick={() => setDeleteId(null)} className="flex-1 rounded-2xl h-16 font-black border border-white/5 hover:bg-white/10 text-lg font-display uppercase italic">Abort</Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => deleteId && deleteColor({ variables: { id: deleteId } })}
-                            disabled={isDeleting}
-                            className="flex-1 rounded-2xl h-16 font-black shadow-neon bg-red-500 hover:bg-red-600 border-none text-xl font-display uppercase italic transition-all active:scale-95"
-                        >
-                            {isDeleting ? 'Erasing...' : 'Confirm Purge'}
-                        </Button>
-                    </DialogFooter>
+                    <DialogTitle className="text-xl font-black mb-2">تأكيد الحذف</DialogTitle>
+                    <DialogDescription className="text-gray-400 mb-8 font-medium italic text-right">سيتم حذف هذا اللون نهائياً من قاعدة البيانات. هل أنت متأكد؟</DialogDescription>
+                    <div className="flex gap-3">
+                        <Button variant="destructive" onClick={() => deleteId && deleteColor({ variables: { id: deleteId } })} disabled={isDeleting} className="flex-1 h-12 rounded-xl font-bold bg-red-500 hover:bg-red-600 border-none shadow-lg shadow-red-500/20">حذف نهائي</Button>
+                        <Button variant="ghost" onClick={() => setDeleteId(null)} className="flex-1 h-12 rounded-xl font-bold border border-white/10 text-gray-400 hover:bg-white/5">إلغاء</Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Bulk Delete Dialog */}
             <Dialog open={isBulkDeleteDialogOpen} onOpenChange={setIsBulkDeleteDialogOpen}>
-                <DialogContent className="border-red-500/20 max-w-lg rounded-[3rem] p-0 text-right shadow-glass overflow-hidden relative flex flex-col">
-                    <div className="p-10 flex-1 overflow-y-auto">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-[50px] -mr-16 -mt-16 animate-pulse"></div>
-                        <DialogHeader className="flex flex-col items-end gap-6 relative z-10">
-                            <div className="size-24 bg-red-500/10 rounded-[2rem] border border-red-500/20 flex items-center justify-center shadow-neon-sm mx-auto group">
-                                <span className="material-symbols-outlined text-5xl text-red-500 group-hover:scale-125 transition-transform duration-500">auto_delete</span>
-                            </div>
-                            <div className="space-y-3 text-center w-full">
-                                <DialogTitle className="text-4xl font-black text-white font-display uppercase italic tracking-tighter">Bulk Purge Protocol</DialogTitle>
-                                <DialogDescription className="text-gray-400 font-medium text-lg pt-2 leading-relaxed">
-                                    You are about to erase <span className="text-red-500 font-black">{selectedIds.length}</span> visual units. This data cannot be recovered.
-                                </DialogDescription>
-                            </div>
-                        </DialogHeader>
+                <DialogContent className="border-red-500/20 text-white max-w-md rounded-3xl p-8 shadow-glass text-center">
+                    <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 text-red-500 border border-red-500/20">
+                        <span className="material-symbols-outlined text-3xl">delete</span>
                     </div>
-                    <DialogFooter className="p-12 border-t border-white/5 flex gap-6 relative z-10">
-                        <Button variant="ghost" onClick={() => setIsBulkDeleteDialogOpen(false)} className="flex-1 rounded-2xl h-16 font-black border border-white/5 hover:bg-white/10 text-lg font-display uppercase italic">Abort</Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => bulkDeleteColors({ variables: { ids: selectedIds } })}
-                            disabled={isBulkDeleting}
-                            className="flex-1 rounded-2xl h-16 font-black shadow-neon bg-red-500 hover:bg-red-600 border-none text-xl font-display uppercase italic transition-all active:scale-95"
-                        >
-                            {isBulkDeleting ? 'Purging Matrix...' : 'Execute Protocol'}
-                        </Button>
-                    </DialogFooter>
+                    <DialogTitle className="text-xl font-black mb-2">حذف المجموعة</DialogTitle>
+                    <DialogDescription className="text-gray-400 mb-8 font-medium italic text-right">أنت على وشك حذف {selectedIds.length} لون. هذا الإجراء لا يمكن التراجع عنه.</DialogDescription>
+                    <div className="flex gap-3">
+                        <Button variant="destructive" onClick={() => bulkDeleteColors({ variables: { ids: selectedIds } })} disabled={isBulkDeleting} className="flex-1 h-12 rounded-xl font-bold bg-red-500 hover:bg-red-600 border-none shadow-lg shadow-red-500/20">حذف الكل</Button>
+                        <Button variant="ghost" onClick={() => setIsBulkDeleteDialogOpen(false)} className="flex-1 h-12 rounded-xl font-bold border border-white/10 text-gray-400 hover:bg-white/5">إلغاء</Button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </AdminLayout>

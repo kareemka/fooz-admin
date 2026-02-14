@@ -97,9 +97,12 @@ export default function SettingsPage() {
                 newPassword: '',
                 confirmPassword: ''
             }));
+
+            // Optional: Reload or logout
+            // router.push('/login');
         } catch (error: any) {
             const message = error.response?.data?.message || 'حدث خطأ أثناء تغيير كلمة المرور';
-            toast.error(typeof message === 'string' ? message : message[0]);
+            toast.error(typeof message === 'string' ? message : (Array.isArray(message) ? message[0] : 'حدث خطأ غير معروف'));
         } finally {
             setIsChangingPassword(false);
         }
@@ -170,7 +173,7 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                             <span className="h-px w-10 bg-primary/30"></span>
-                                            Store Name
+                                            اسم المتجر
                                         </Label>
                                         <Input
                                             value={settings.storeName}
@@ -182,7 +185,7 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                             <span className="h-px w-10 bg-primary/30"></span>
-                                            Official Email
+                                            البريد الإلكتروني الرسمي
                                         </Label>
                                         <div className="relative group">
                                             <span className="material-symbols-outlined absolute right-5 top-1/2 h-6 w-6 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors">mail</span>
@@ -197,7 +200,7 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                             <span className="h-px w-10 bg-primary/30"></span>
-                                            Support Phone
+                                            رقم الدعم
                                         </Label>
                                         <div className="relative group">
                                             <span className="material-symbols-outlined absolute right-5 top-1/2 h-6 w-6 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors">call</span>
@@ -214,14 +217,14 @@ export default function SettingsPage() {
                                 <div className="space-y-8 text-right order-1 md:order-2">
                                     <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                         <span className="h-px w-10 bg-primary/30"></span>
-                                        Brand Identity
+                                        هوية العلامة التجارية
                                     </Label>
                                     <div className="space-y-8">
                                         {settings.storeLogo ? (
                                             <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 glass-panel group shadow-glass max-w-sm mx-auto md:mr-0 md:ml-auto">
                                                 <img src={settings.storeLogo} alt="Logo" className="w-full h-full object-contain p-10 transition-transform group-hover:scale-110 duration-700" />
                                                 <div className="absolute inset-0 bg-black/70 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                                                    <Button variant="outline" className="rounded-2xl border-white/10 text-white hover:bg-red-500 hover:text-white hover:border-red-500 h-16 px-10 font-black text-xl font-display uppercase italic" onClick={() => handleChange('storeLogo', '')}>Remove Logo</Button>
+                                                    <Button variant="outline" className="rounded-2xl border-white/10 text-white hover:bg-red-500 hover:text-white hover:border-red-500 h-16 px-10 font-black text-xl font-display uppercase italic" onClick={() => handleChange('storeLogo', '')}>إزالة الشعار</Button>
                                                 </div>
                                             </div>
                                         ) : (
@@ -233,13 +236,13 @@ export default function SettingsPage() {
                                                 <div className="text-center space-y-4 relative z-10 px-6">
                                                     <p className="font-bold text-gray-400">اسحب الشعار هنا أو اختر من المعرض</p>
                                                     <GallerySelector onSelect={(url) => handleChange('storeLogo', url)}>
-                                                        <Button variant="secondary" className="rounded-2xl bg-white/10 text-white hover:bg-primary hover:text-black font-black font-display uppercase italic px-8 h-12 border border-white/5 transition-all">Browse Gallery</Button>
+                                                        <Button variant="secondary" className="rounded-2xl bg-white/10 text-white hover:bg-primary hover:text-black font-black font-display uppercase italic px-8 h-12 border border-white/5 transition-all">تصفح المعرض</Button>
                                                     </GallerySelector>
                                                 </div>
                                             </div>
                                         )}
                                         <div className="flex items-start justify-end gap-3 opacity-50 px-6">
-                                            <p className="text-[11px] text-gray-400 font-black uppercase tracking-widest leading-relaxed text-right italic">Transparent PNG recommended for high-end gaming aesthetic.</p>
+                                            <p className="text-[11px] text-gray-400 font-black uppercase tracking-widest leading-relaxed text-right italic">يفضل استخدام PNG شفاف للحصول على جمالية ألعاب عالية الجودة.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -258,10 +261,10 @@ export default function SettingsPage() {
 
                             <div className="grid gap-10 md:grid-cols-2 text-right">
                                 {[
-                                    { id: 'facebook', label: 'Facebook', icon: 'facebook', placeholder: 'facebook.com/yourstore' },
-                                    { id: 'instagram', label: 'Instagram', icon: 'account_circle', placeholder: 'instagram.com/yourstore' },
-                                    { id: 'twitter', label: 'Twitter (X)', icon: 'close', placeholder: 'twitter.com/yourstore' },
-                                    { id: 'discord', label: 'Community Discord', icon: 'forum', placeholder: 'discord.gg/invite' },
+                                    { id: 'facebook', label: 'فيسبوك', icon: 'facebook', placeholder: 'facebook.com/yourstore' },
+                                    { id: 'instagram', label: 'انستغرام', icon: 'account_circle', placeholder: 'instagram.com/yourstore' },
+                                    { id: 'twitter', label: 'تويتر (X)', icon: 'close', placeholder: 'twitter.com/yourstore' },
+                                    { id: 'discord', label: 'مجموعة الديسكورد', icon: 'forum', placeholder: 'discord.gg/invite' },
                                 ].map((item) => (
                                     <div key={item.id} className="space-y-4">
                                         <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
@@ -282,7 +285,7 @@ export default function SettingsPage() {
                                 <div className="space-y-4 md:col-span-2">
                                     <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                         <span className="h-px w-10 bg-primary/30"></span>
-                                        Direct WhatsApp
+                                        واتساب مباشر
                                     </Label>
                                     <div className="relative group">
                                         <div className="absolute right-5 top-1/2 -translate-y-1/2 h-8 w-14 flex items-center justify-center bg-primary/10 rounded-xl border border-primary/20 text-primary font-black text-sm font-display italic">WA</div>
@@ -293,7 +296,7 @@ export default function SettingsPage() {
                                             placeholder="96650xxxxxxxx"
                                         />
                                     </div>
-                                    <p className="text-[11px] text-gray-500 font-black uppercase tracking-widest pr-4 italic">No "+" symbol, just country code and number.</p>
+                                    <p className="text-[11px] text-gray-500 font-black uppercase tracking-widest pr-4 italic">بدون رمز "+"، فقط رمز الدولة والرقم.</p>
                                 </div>
                             </div>
                         </div>
@@ -312,7 +315,7 @@ export default function SettingsPage() {
                                 <div className="space-y-8">
                                     <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                         <span className="h-px w-10 bg-primary/30"></span>
-                                        Neon Accent Color
+                                        لون التمييز (النيون)
                                     </Label>
                                     <div className="flex flex-wrap flex-row-reverse gap-8 items-center">
                                         {[
@@ -372,10 +375,10 @@ export default function SettingsPage() {
                                     <div className="flex items-center justify-between mb-10 pb-6 border-b border-white/5 relative z-10">
                                         <div className="flex items-center gap-3">
                                             <div className="size-3 rounded-full bg-primary shadow-neon pulse" />
-                                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] font-display">Live Preview</span>
+                                            <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] font-display">معاينة حية</span>
                                         </div>
                                         <h3 className="text-xl font-black text-white font-display uppercase italic flex items-center gap-4">
-                                            System Visual Overhaul
+                                            النظام البصري
                                             <span className="material-symbols-outlined text-primary text-2xl">fullscreen</span>
                                         </h3>
                                     </div>
@@ -399,7 +402,7 @@ export default function SettingsPage() {
                                             <div className="w-3/4 h-3 rounded-full bg-white/5 relative z-10" />
                                         </div>
                                     </div>
-                                    <p className="mt-10 text-[10px] text-center text-gray-600 font-black uppercase tracking-[0.4em] opacity-80 font-display italic">Universal ID Applied to Database and Client Renderers</p>
+                                    <p className="mt-10 text-[10px] text-center text-gray-600 font-black uppercase tracking-[0.4em] opacity-80 font-display italic">تم تطبيق الهوية على قاعدة البيانات والعرض</p>
                                 </div>
                             </div>
                         </div>
@@ -413,8 +416,8 @@ export default function SettingsPage() {
                                 </div>
                                 {isChangingPassword ? (
                                     <div className="flex flex-col gap-1 text-right">
-                                        <h2 className="text-3xl font-black text-white font-display uppercase italic">Security Update</h2>
-                                        <p className="text-xs text-primary font-black animate-pulse uppercase tracking-widest font-display">Updating core security nodes...</p>
+                                        <h2 className="text-3xl font-black text-white font-display uppercase italic">تحديث الأمان</h2>
+                                        <p className="text-xs text-primary font-black animate-pulse uppercase tracking-widest font-display">جاري تحديث عقد الأمان الأساسية...</p>
                                     </div>
                                 ) : (
                                     <h2 className="text-3xl font-black text-white font-display uppercase italic">إدارة الأمان</h2>
@@ -426,7 +429,7 @@ export default function SettingsPage() {
                                     <div className="space-y-4">
                                         <Label className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-end gap-3 font-display italic">
                                             <span className="h-px w-10 bg-primary/30"></span>
-                                            Admin Alias
+                                            اسم المسؤول
                                         </Label>
                                         <Input
                                             value={settings.adminName}
@@ -437,15 +440,15 @@ export default function SettingsPage() {
                                     <div className="p-10 rounded-[2.5rem] bg-amber-500/5 border border-amber-500/10 text-amber-500/80 relative overflow-hidden shadow-inner flex flex-col gap-4">
                                         <div className="absolute top-0 right-0 w-3 h-full bg-amber-500/20" />
                                         <h4 className="font-black text-xl flex items-center justify-end gap-4 font-display uppercase italic">
-                                            Security Alert
+                                            تنبيه أمني
                                             <span className="material-symbols-outlined text-2xl">priority_high</span>
                                         </h4>
-                                        <p className="text-sm font-bold leading-relaxed pr-4 text-right">سيتم تسجيل خروجك وتحديث الـ Token الخاص بالجلسة تلقائياً عند تغيير كلمة المرور لضمان أمان نظامك بالكامل وحماية البيانات من الوصول غير المصرح به.</p>
+                                        <p className="text-sm font-bold leading-relaxed pr-4 text-right">سيتم تسجيل خروجك وتحديث رمز الجلسة تلقائياً عند تغيير كلمة المرور لضمان أمان نظامك بالكامل وحماية البيانات من الوصول غير المصرح به.</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-8 text-right border-white/5 md:border-r md:pr-16 order-1 md:order-2">
-                                    <h3 className="font-black text-xs text-primary uppercase tracking-[0.4em] mb-6 font-display italic">Password Modifications</h3>
+                                    <h3 className="font-black text-xs text-primary uppercase tracking-[0.4em] mb-6 font-display italic">تغيير كلمة المرور</h3>
                                     <div className="space-y-3">
                                         <Label className="text-gray-400 font-bold uppercase text-xs tracking-widest">كلمة المرور الحالية</Label>
                                         <Input
@@ -481,12 +484,12 @@ export default function SettingsPage() {
                                         {isChangingPassword ? (
                                             <div className="flex items-center gap-3">
                                                 <Loader2 className="size-6 animate-spin" />
-                                                Processing Security...
+                                                جاري المعالجة...
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-3">
                                                 <span className="material-symbols-outlined text-2xl">lock_reset</span>
-                                                Commit Password Change
+                                                تأكيد تغيير كلمة المرور
                                             </div>
                                         )}
                                     </Button>
@@ -499,4 +502,3 @@ export default function SettingsPage() {
         </AdminLayout>
     );
 }
-

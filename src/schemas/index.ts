@@ -17,7 +17,8 @@ export const ProductSchema = z.object({
   stock: z.coerce.number().int().min(0, 'Stock cannot be negative'),
   images: z.array(z.string()).min(1, 'At least one image is required'),
   glbUrl: z.string().optional(),
-  colorIds: z.array(z.string()).min(1, 'At least one color is required'),
+  surfaceColorIds: z.array(z.string()).min(1, 'يرجى اختيار لون سطح واحد على الأقل'),
+  edgeColorIds: z.array(z.string()).min(1, 'يرجى اختيار لون أطراف واحد على الأقل'),
   accessoryIds: z.array(z.string()).optional(),
   sizes: z.array(z.object({
     name: z.string().min(1, 'Size name is required'),

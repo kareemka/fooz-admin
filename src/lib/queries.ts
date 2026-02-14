@@ -127,3 +127,17 @@ export const GET_MONTHLY_SALES = gql`
         }
     }
 `;
+
+export const GET_COLORS = gql`
+    query GetColors($search: String, $skip: Int, $take: Int) {
+        colors(search: $search, skip: $skip, take: $take) {
+            items {
+                id
+                name
+                image
+            }
+            total
+        }
+    }
+`;
+

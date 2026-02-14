@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import Link from 'next/link';
 import { CURRENCY } from '@/lib/constants';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 const GET_ORDER_DETAILS = gql`
@@ -34,8 +34,10 @@ const GET_ORDER_DETAILS = gql`
                 productId
                 quantity
                 price
-                colorName
-                colorImage
+                surfaceColorName
+                surfaceColorImage
+                edgeColorName
+                edgeColorImage
                 sizeName
                 sizeDimensions
                 accessories {
@@ -85,8 +87,10 @@ interface OrderItem {
     productId: string;
     quantity: number;
     price: number;
-    colorName?: string;
-    colorImage?: string;
+    surfaceColorName?: string;
+    surfaceColorImage?: string;
+    edgeColorName?: string;
+    edgeColorImage?: string;
     sizeName?: string;
     sizeDimensions?: string;
     accessories?: {
@@ -335,13 +339,24 @@ export default function OrderDetailsPage() {
                                                         <div className="space-y-3">
                                                             <p className="font-black text-xl text-white group-hover:text-primary transition-colors">{item.product?.name}</p>
                                                             <div className="flex flex-wrap gap-2">
-                                                                {item.colorName && (
+                                                                {item.surfaceColorName && (
                                                                     <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
-                                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">اللون:</span>
-                                                                        <span className="text-xs font-black text-gray-200">{item.colorName}</span>
-                                                                        {item.colorImage && (
+                                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">لون السطح:</span>
+                                                                        <span className="text-xs font-black text-gray-200">{item.surfaceColorName}</span>
+                                                                        {item.surfaceColorImage && (
                                                                             <div className="size-4 rounded-full border border-white/20 overflow-hidden shadow-neon-sm">
-                                                                                <img src={item.colorImage} alt={item.colorName} className="h-full w-full object-cover" />
+                                                                                <img src={item.surfaceColorImage} alt={item.surfaceColorName} className="h-full w-full object-cover" />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {item.edgeColorName && (
+                                                                    <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
+                                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">لون الأطراف:</span>
+                                                                        <span className="text-xs font-black text-gray-200">{item.edgeColorName}</span>
+                                                                        {item.edgeColorImage && (
+                                                                            <div className="size-4 rounded-full border border-white/20 overflow-hidden shadow-neon-sm">
+                                                                                <img src={item.edgeColorImage} alt={item.edgeColorName} className="h-full w-full object-cover" />
                                                                             </div>
                                                                         )}
                                                                     </div>
@@ -375,7 +390,7 @@ export default function OrderDetailsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-6 text-center font-mono font-bold text-gray-300">
-                                                    {item.price} {CURRENCY.SYMBOL}
+                                                    {formatPrice(item.price)} {CURRENCY.SYMBOL}
                                                 </td>
                                                 <td className="px-6 py-6 text-center">
                                                     <span className="inline-flex size-10 items-center justify-center bg-white/5 border border-white/10 rounded-xl font-black text-white text-lg shadow-neon-sm">
@@ -384,7 +399,7 @@ export default function OrderDetailsPage() {
                                                 </td>
                                                 <td className="px-6 py-6 text-left">
                                                     <div className="font-black text-2xl text-primary font-mono italic">
-                                                        {item.price * item.quantity} <span className="text-sm opacity-50">{CURRENCY.SYMBOL}</span>
+                                                        {formatPrice(item.price * item.quantity)} <span className="text-sm opacity-50">{CURRENCY.SYMBOL}</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -454,7 +469,7 @@ export default function OrderDetailsPage() {
                                         <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-1">المجموع النهائي</span>
                                         <div className="flex items-baseline gap-2">
                                             <span className="text-5xl font-black italic bg-gradient-to-r from-white to-primary bg-clip-text text-transparent drop-shadow-neon">
-                                                {order.totalAmount}
+                                                {formatPrice(order.totalAmount)}
                                             </span>
                                             <span className="text-sm font-black text-primary uppercase italic">{CURRENCY.SYMBOL}</span>
                                         </div>

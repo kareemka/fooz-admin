@@ -85,8 +85,8 @@ export function GLBViewer({
                 ar={showAr ? '' : undefined}
                 auto-rotate={autoRotate ? '' : undefined}
                 className="w-full h-full bg-muted/10"
-                loading="lazy"
-                reveal="manual"
+                loading="eager"
+                reveal="auto"
                 style={{ width: '100%', height: '100%', '--poster-color': 'transparent' } as any}
             >
                 <div slot="poster" className="absolute inset-0 flex items-center justify-center bg-muted/20 backdrop-blur-sm">

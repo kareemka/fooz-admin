@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { CURRENCY } from '@/lib/constants';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 const GET_CATEGORIES = gql`
@@ -269,11 +269,11 @@ export default function ProductsPage() {
                                                 <div className="flex flex-col items-start gap-1">
                                                     {product.discountPercentage ? (
                                                         <>
-                                                            <span className="text-[10px] line-through text-gray-500 font-mono">{(product.price).toFixed(2)} د.ع</span>
-                                                            <span className="font-bold text-primary text-lg font-display tracking-tight">{(product.price * (1 - product.discountPercentage / 100)).toFixed(2)} د.ع</span>
+                                                            <span className="text-[10px] line-through text-gray-500 font-mono">{formatPrice(product.price)} د.ع</span>
+                                                            <span className="font-bold text-primary text-lg font-display tracking-tight">{formatPrice(product.price * (1 - product.discountPercentage / 100))} د.ع</span>
                                                         </>
                                                     ) : (
-                                                        <span className="font-bold text-white text-lg font-display tracking-tight">{(product.price).toFixed(2)} د.ع</span>
+                                                        <span className="font-bold text-white text-lg font-display tracking-tight">{formatPrice(product.price)} د.ع</span>
                                                     )}
                                                 </div>
                                             </td>

@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 interface OrderItem {
   id: string;
@@ -230,7 +230,7 @@ export default function OrdersPage() {
                         <td className="px-6 py-4 font-mono font-bold text-primary italic">#{order.orderNumber}</td>
                         <td className="px-6 py-4 font-bold text-white">{order.customerName}</td>
                         <td className="px-6 py-4">
-                          <span className="font-black text-white text-base">{(order.totalAmount).toFixed(2)} {CURRENCY.SYMBOL}</span>
+                          <span className="font-black text-white text-base">{formatPrice(order.totalAmount)} {CURRENCY.SYMBOL}</span>
                         </td>
                         <td className="px-6 py-4">
                           <span className={cn(

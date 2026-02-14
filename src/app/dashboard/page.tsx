@@ -7,7 +7,7 @@ import { AdminLayout } from '@/components/layout/admin-layout';
 import { useQuery } from '@apollo/client/react';
 import { GET_ORDERS, GET_PRODUCTS, GET_CATEGORIES, GET_FAQS, GET_MONTHLY_SALES } from '@/lib/queries';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 
 
@@ -91,7 +91,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col items-end">
-                                <span className="text-2xl font-bold text-white font-display">{totalSales.toLocaleString('ar-IQ')} IQD</span>
+                                <span className="text-2xl font-bold text-white font-display">{formatPrice(totalSales)} IQD</span>
                                 <span className="text-xs text-gray-400">إجمالي المبيعات</span>
                             </div>
                         </div>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#15161C', borderColor: '#333', borderRadius: '8px' }}
                                         itemStyle={{ color: '#00ff9d' }}
-                                        formatter={(value: number | undefined) => value ? `${value.toLocaleString('ar-IQ')} IQD` : '0 IQD'}
+                                        formatter={(value: number | undefined) => value ? `${formatPrice(value)} IQD` : '0 IQD'}
                                     />
                                     <Area type="monotone" dataKey="uv" stroke="#00ff9d" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
                                 </AreaChart>
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                                                 ? order.items[0].product?.name + (order.items.length > 1 ? ` (+${order.items.length - 1})` : '')
                                                 : 'لا يوجد منتجات'}
                                         </td>
-                                        <td className="px-6 py-4 font-bold text-white">{order.totalAmount.toLocaleString('ar-IQ')} IQD</td>
+                                        <td className="px-6 py-4 font-bold text-white">{formatPrice(order.totalAmount)} IQD</td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
                                                 "px-2.5 py-1 rounded-full text-xs font-medium border",

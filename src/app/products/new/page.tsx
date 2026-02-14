@@ -2,17 +2,12 @@
 
 import { useState } from 'react';
 
-import { useRouter } from 'next/navigation';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
 import { ProductInput } from '@/schemas';
 import { AdminLayout } from '@/components/layout/admin-layout';
 import { ProductForm } from '@/components/product/product-form';
-import { GET_PRODUCTS } from '@/lib/queries';
 import { toast } from 'sonner';
-import { ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
 const CREATE_PRODUCT = gql`
     mutation CreateProduct($input: CreateProductInput!) {
@@ -54,7 +49,8 @@ export default function NewProductPage() {
             galleryImages: data.images.slice(1),
             glbFileUrl: data.glbUrl || undefined,
             categoryId: data.categoryId,
-            colorIds: data.colorIds,
+            surfaceColorIds: data.surfaceColorIds,
+            edgeColorIds: data.edgeColorIds,
             accessoryIds: data.accessoryIds,
             sizes: data.sizes?.map(s => ({ ...s, price: Number(s.price) })),
         };

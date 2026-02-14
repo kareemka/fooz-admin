@@ -27,7 +27,10 @@ const GET_PRODUCT = gql`
             galleryImages
             glbFileUrl
             categoryId
-            colors {
+            surfaceColors {
+                id
+            }
+            edgeColors {
                 id
             }
             accessories {
@@ -84,7 +87,8 @@ export default function EditProductPage() {
             galleryImages: data.images.slice(1),
             glbFileUrl: data.glbUrl || null,
             categoryId: data.categoryId,
-            colorIds: data.colorIds,
+            surfaceColorIds: data.surfaceColorIds,
+            edgeColorIds: data.edgeColorIds,
             accessoryIds: data.accessoryIds,
             sizes: data.sizes?.map(s => ({
                 name: s.name,
@@ -100,7 +104,8 @@ export default function EditProductPage() {
         images: [product.mainImage, ...product.galleryImages].filter(Boolean),
         glbUrl: product.glbFileUrl || '',
         accessoryIds: product.accessories?.map((a: any) => a.id) || [],
-        colorIds: product.colors?.map((c: any) => c.id) || [],
+        surfaceColorIds: product.surfaceColors?.map((c: any) => c.id) || [],
+        edgeColorIds: product.edgeColors?.map((c: any) => c.id) || [],
         sizes: product.sizes || [],
     } : null;
 

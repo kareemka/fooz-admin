@@ -14,6 +14,7 @@ interface SidebarProps {
 const navItems = [
     { name: 'لوحة التحكم', path: '/dashboard', icon: 'dashboard' },
     { name: 'المنتجات', path: '/products', icon: 'inventory_2' },
+    { name: 'الملحقات', path: '/accessories', icon: 'inventory_2' },
     { name: 'الطلبات', path: '/orders', icon: 'shopping_cart' },
     { name: 'المعرض', path: '/gallery', icon: 'perm_media' },
     { name: 'الأقسام', path: '/categories', icon: 'category' },

@@ -11,7 +11,6 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-    FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,13 +25,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { gql } from '@apollo/client';
 import { useQuery as useApolloQuery } from '@apollo/client/react';
-import { Loader2, Plus, ArrowRight, Save, Trash2, Box as BoxIcon, Image as ImageIcon, Gamepad2, Palette, Ruler, CheckCircle2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Box as BoxIcon, Image as ImageIcon, Gamepad2, Palette, Ruler } from 'lucide-react';
 import { GallerySelector } from '@/components/gallery/gallery-selector';
 import { GLBSelector } from '@/components/gallery/glb-selector';
-import { cn } from '@/lib/utils';
+import { ColorSelector } from '@/components/colors/color-selector';
+import { formatPrice } from '@/lib/utils';
 import { CURRENCY } from '@/lib/constants';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@apollo/client/react';
+import { GET_COLORS as GET_COLORS_QUERY } from '@/lib/queries';
 
 interface ProductFormProps {
     initialData?: Partial<ProductInput>;
@@ -66,95 +68,72 @@ const GET_ACCESSORIES = gql`
     }
 `;
 
-const GET_COLORS = gql`
-    query GetColors {
-        colors {
-            items {
-                id
-                name
-                image
-            }
-        }
-    }
-`;
+// Redundant queries moved to lib/queries.ts
 
-function ColorsSection({ form }: { form: any }) {
-    const { data, loading } = useApolloQuery<{ colors: { items: any[] } }>(GET_COLORS);
-    const colors = data?.colors?.items || [];
+function ColorsSection({ form, name, label, icon: Icon }: { form: any, name: string, label: string, icon: any }) {
+    const { data } = useQuery<{ colors: { items: any[] } }>(GET_COLORS_QUERY);
+    const allColors = data?.colors?.items || [];
+    const selectedIds = form.watch(name) || [];
+
+    const selectedColors = useMemo(() => {
+        return allColors.filter((c: any) => selectedIds.includes(c.id));
+    }, [allColors, selectedIds]);
 
     return (
         <Card className="rounded-2xl sm:rounded-[2rem] border-none shadow-xl bg-card/60 backdrop-blur-md overflow-hidden">
             <CardHeader className="bg-primary/5 border-b border-primary/10 py-5 sm:py-6 px-5 sm:px-8">
                 <CardTitle className="text-lg sm:text-xl font-black flex items-center gap-3">
-                    <div className="bg-primary/20 p-1.5 sm:p-2 rounded-xl"><Palette className="size-4 sm:size-5 text-primary" /></div>
-                    الألوان المتاحة <span className="text-destructive">*</span>
+                    <div className="bg-primary/20 p-1.5 sm:p-2 rounded-xl"><Icon className="size-4 sm:size-5 text-primary" /></div>
+                    {label} <span className="text-destructive">*</span>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 pt-6 sm:pt-8 px-5 sm:px-8 pb-8 sm:pb-10">
-                {loading ? (
-                    <div className="flex justify-center p-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                ) : colors.length === 0 ? (
-                    <p className="text-center text-muted-foreground text-sm">لا توجد ألوان متاحة. يرجى إضافة ألوان أولاً.</p>
-                ) : (
-                    <FormField
-                        control={form.control}
-                        name="colorIds"
-                        render={() => (
-                            <FormItem>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[350px] overflow-y-auto pl-1 sm:pr-2 custom-scrollbar">
-                                    {colors.map((color) => (
-                                        <FormField
-                                            key={color.id}
-                                            control={form.control}
-                                            name="colorIds"
-                                            render={({ field }) => {
-                                                const isSelected = field.value?.includes(color.id);
-                                                return (
-                                                    <FormItem
-                                                        key={color.id}
-                                                        onClick={() => {
-                                                            const newValue = isSelected
-                                                                ? field.value?.filter((id: string) => id !== color.id)
-                                                                : [...(field.value || []), color.id];
-                                                            field.onChange(newValue);
-                                                        }}
-                                                        className={cn(
-                                                            "flex flex-col items-center gap-2 rounded-2xl border-2 p-3 transition-all cursor-pointer group",
-                                                            isSelected
-                                                                ? "border-primary bg-primary/5 shadow-lg shadow-primary/5 scale-[1.02]"
-                                                                : "border-transparent bg-background/50 hover:border-primary/30"
-                                                        )}
-                                                    >
-                                                        <div className="relative size-12 rounded-full overflow-hidden border-2 border-background shadow-inner">
-                                                            {color.image ? (
-                                                                <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-muted flex items-center justify-center">
-                                                                    <Palette className="size-4 text-muted-foreground" />
-                                                                </div>
-                                                            )}
-                                                            {isSelected && (
-                                                                <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                                                                    <CheckCircle2 className="size-5 text-primary bg-white rounded-full shadow-lg" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <FormLabel className="font-bold text-[9px] sm:text-[10px] cursor-pointer text-center truncate w-full">
-                                                            {color.name}
-                                                        </FormLabel>
-                                                    </FormItem>
-                                                )
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                                <FormMessage className="text-xs font-bold text-center mt-2" />
-                            </FormItem>
-                        )}
-                    />
+            <CardContent className="space-y-6 pt-6 sm:pt-8 px-5 sm:px-8 pb-8 sm:pb-10">
+                <div className="flex flex-wrap gap-3">
+                    {selectedColors.map((color: any) => (
+                        <div
+                            key={color.id}
+                            className="group relative flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2 pr-3 hover:border-primary/50 transition-all"
+                        >
+                            <div className="size-8 rounded-full overflow-hidden border border-white/10 shrink-0">
+                                {color.image ? (
+                                    <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                                        <Palette className="size-3 text-muted-foreground" />
+                                    </div>
+                                )}
+                            </div>
+                            <span className="text-[10px] font-bold text-white">{color.name}</span>
+                            <button
+                                type="button"
+                                onClick={() => form.setValue(name, selectedIds.filter((id: string) => id !== color.id))}
+                                className="size-5 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 text-gray-400 transition-all opacity-0 group-hover:opacity-100"
+                            >
+                                <Trash2 className="size-3" />
+                            </button>
+                        </div>
+                    ))}
+
+                    <ColorSelector
+                        selectedIds={selectedIds}
+                        onSelect={(ids) => form.setValue(name, ids)}
+                        label={label}
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-2xl border-dashed border-2 border-primary/30 hover:border-primary hover:bg-primary/5 h-24 px-6 flex flex-col items-center justify-center gap-2 transition-all font-bold text-xs bg-primary/5 shrink-0 group overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Plus className="size-6 text-primary relative z-10" />
+                            <span className="text-[10px] text-primary relative z-10 italic">إضافة/تعديل</span>
+                        </Button>
+                    </ColorSelector>
+                </div>
+                {selectedIds.length === 0 && (
+                    <p className="text-[10px] text-muted-foreground italic text-center">لم يتم اختيار أي لون بعد</p>
                 )}
+                <FormMessage className="text-xs font-bold text-center" />
             </CardContent>
         </Card>
     );
@@ -302,7 +281,7 @@ function AccessoriesSection({ form }: { form: any }) {
                                                             />
                                                         </FormControl>
                                                         <FormLabel className="font-bold text-sm cursor-pointer flex-1 pt-1">
-                                                            {accessory.name} <span className="text-muted-foreground text-xs font-normal">({accessory.price} {CURRENCY.SYMBOL})</span>
+                                                            {accessory.name} <span className="text-muted-foreground text-xs font-normal">({formatPrice(accessory.price)} {CURRENCY.SYMBOL})</span>
                                                         </FormLabel>
                                                     </FormItem>
                                                 )
@@ -339,7 +318,8 @@ export function ProductForm({ initialData, onSubmit, isLoading, isSuccess, onRes
             glbUrl: initialData?.glbUrl || '',
             isActive: initialData?.isActive ?? true,
             accessoryIds: initialData?.accessoryIds || [],
-            colorIds: initialData?.colorIds || [],
+            surfaceColorIds: (initialData as any)?.surfaceColorIds || [],
+            edgeColorIds: (initialData as any)?.edgeColorIds || [],
             sizes: initialData?.sizes || [],
         } as any,
     });
@@ -362,7 +342,7 @@ export function ProductForm({ initialData, onSubmit, isLoading, isSuccess, onRes
     const nextStep = async () => {
         // Simple validation for each step if needed
         let fieldsToValidate: any[] = [];
-        if (step === 1) fieldsToValidate = ['name', 'description', 'categoryId', 'colorIds'];
+        if (step === 1) fieldsToValidate = ['name', 'description', 'categoryId', 'surfaceColorIds', 'edgeColorIds'];
         if (step === 2) fieldsToValidate = ['images'];
         if (step === 3) fieldsToValidate = ['price', 'stock'];
 
@@ -508,7 +488,10 @@ export function ProductForm({ initialData, onSubmit, isLoading, isSuccess, onRes
                             />
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <ColorsSection form={form} />
+                                <ColorsSection form={form} name="surfaceColorIds" label="لون السطح" icon={Palette} />
+                                <ColorsSection form={form} name="edgeColorIds" label="لون الأطراف" icon={Palette} />
+                            </div>
+                            <div className="grid grid-cols-1 gap-8">
                                 <AccessoriesSection form={form} />
                             </div>
                         </div>

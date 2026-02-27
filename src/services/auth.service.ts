@@ -16,8 +16,15 @@ export const authService = {
     login: async (credentials: LoginInput) => {
         const { data } = await api.post<AuthResponse>('/auth/login', credentials);
         if (data.accessToken) {
-            Cookies.set('token', data.accessToken, { expires: 7, path: '/' });
-            Cookies.set('user', JSON.stringify(data.user), { expires: 7, path: '/' });
+            const isProduction = process.env.NODE_ENV === 'production';
+            const cookieOptions = {
+                expires: 7,
+                path: '/',
+                secure: isProduction,
+                sameSite: 'strict' as const,
+            };
+            Cookies.set('token', data.accessToken, cookieOptions);
+            Cookies.set('user', JSON.stringify(data.user), cookieOptions);
         }
         return data;
     },

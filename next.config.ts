@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
               "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:",
               "connect-src 'self' http://localhost:3000 https://api.fooz-gaming.com",
-              "img-src 'self' data: blob: http://localhost:3000 https://api.fooz-gaming.com",
+              "img-src 'self' data: blob: http://localhost:3000 https://api.fooz-gaming.com https://picsum.photos",
               "frame-ancestors 'none'",
             ].join('; '),
           },
@@ -49,6 +49,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'api.fooz-gaming.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
       },
     ],
   },

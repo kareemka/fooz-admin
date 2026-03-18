@@ -281,7 +281,9 @@ function AccessoriesSection({ form }: { form: any }) {
                                                             />
                                                         </FormControl>
                                                         <FormLabel className="font-bold text-sm cursor-pointer flex-1 pt-1">
-                                                            {accessory.name} <span className="text-muted-foreground text-xs font-normal">({formatPrice(accessory.price)} {CURRENCY.SYMBOL})</span>
+                                                            {accessory.name} <span className="text-muted-foreground text-xs font-normal">
+                                                                ({/حزم[ةه]/.test(form.watch('name') || '') ? 'مشمول' : `${formatPrice(accessory.price)} ${CURRENCY.SYMBOL}`})
+                                                            </span>
                                                         </FormLabel>
                                                     </FormItem>
                                                 )

@@ -92,9 +92,13 @@ export const GET_ORDERS = gql`
                 createdAt
                 items {
                     id
+                    price
+                    quantity
                     product {
                         id
                         name
+                        price
+                        discountPercentage
                     }
                 }
             }

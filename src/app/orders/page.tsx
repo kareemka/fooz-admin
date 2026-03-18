@@ -51,6 +51,8 @@ interface OrderItem {
   product?: {
     name: string;
     mainImage: string;
+    price: number;
+    discountPercentage?: number;
   };
 }
 
@@ -60,6 +62,7 @@ interface Order {
   customerName: string;
   customerPhone: string;
   shippingAddress: string;
+  discountAmount: number;
   totalAmount: number;
   status: string;
   createdAt: string;
@@ -225,12 +228,49 @@ export default function OrdersPage() {
                 ) : (
                   orders.map((order: any) => {
                     const statusInfo = getStatusInfo(order.status);
+                    const correctedTotal = (order.items.reduce((acc: number, item: any) => {
+                      const isBundle = item.product?.name?.toLocaleLowerCase().includes('حزم') || 
+                                      item.product?.name?.toLocaleLowerCase().includes('bundle') || 
+                                      item.product?.name?.toLocaleLowerCase().includes('package');
+                      
+                      const basePrice = Number(item.product?.price) || 0;
+                      const discountedPrice = item.product?.discountPercentage ? basePrice * (1 - item.product.discountPercentage / 100) : basePrice;
+                      const displayPrice = isBundle ? discountedPrice : (Number(item.price) || 0);
+                      
+                      return acc + (displayPrice * (Number(item.quantity) || 0));
+                    }, 0) - (Number(order.discountAmount) || 0));
+
+                    const wasCorrected = Math.abs(correctedTotal - (Number(order.totalAmount) || 0)) > 1;
+
                     return (
                       <tr key={order.id} className="hover:bg-white/5 transition-colors group">
-                        <td className="px-6 py-4 font-mono font-bold text-primary italic">#{order.orderNumber}</td>
+                        <td className="px-6 py-4 font-mono font-bold text-primary italic whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            #{order.orderNumber}
+                             {(order.items.some((item: any) => 
+                                 item.product?.name?.toLocaleLowerCase().includes('حزم') || 
+                                 item.product?.name?.toLocaleLowerCase().includes('bundle') || 
+                                 item.product?.name?.toLocaleLowerCase().includes('package')
+                             )) && (
+                               <span className="bg-primary/10 text-primary text-[8px] font-black px-1.5 py-0.5 rounded border border-primary/20 uppercase tracking-tighter">
+                                 حزمة
+                               </span>
+                             )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 font-bold text-white">{order.customerName}</td>
                         <td className="px-6 py-4">
-                          <span className="font-black text-white text-base">{formatPrice(order.totalAmount)} {CURRENCY.SYMBOL}</span>
+                          <div className="flex flex-col">
+                            <span className={cn(
+                              "font-black text-base",
+                              wasCorrected ? "text-yellow-500" : "text-white"
+                            )}>
+                              {formatPrice(correctedTotal)} {CURRENCY.SYMBOL}
+                            </span>
+                            {wasCorrected && (
+                              <span className="text-[8px] text-yellow-500/50 italic">مصحح</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={cn(
@@ -243,6 +283,13 @@ export default function OrdersPage() {
                           )}>
                             <span className="material-symbols-outlined text-[14px]">{statusInfo.icon}</span>
                             {statusInfo.label}
+                             {(order.items.some((item: any) => 
+                                 item.product?.name?.toLocaleLowerCase().includes('حزم') || 
+                                 item.product?.name?.toLocaleLowerCase().includes('bundle') || 
+                                 item.product?.name?.toLocaleLowerCase().includes('package')
+                             )) && (
+                               <span className="mr-1 text-[8px] opacity-70">(سعر ثابت)</span>
+                             )}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-400 font-medium">

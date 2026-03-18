@@ -26,6 +26,7 @@ const GET_ORDER_DETAILS = gql`
             customerName
             customerPhone
             shippingAddress
+            discountAmount
             totalAmount
             status
             createdAt
@@ -49,6 +50,8 @@ const GET_ORDER_DETAILS = gql`
                 product {
                     name
                     mainImage
+                    price
+                    discountPercentage
                 }
             }
         }
@@ -102,6 +105,8 @@ interface OrderItem {
     product?: {
         name: string;
         mainImage: string;
+        price: number;
+        discountPercentage?: number;
     };
 }
 
@@ -111,6 +116,7 @@ interface Order {
     customerName: string;
     customerPhone: string;
     shippingAddress: string;
+    discountAmount: number;
     totalAmount: number;
     status: string;
     createdAt: string;
@@ -174,6 +180,22 @@ export default function OrderDetailsPage() {
     );
 
     const { order } = data;
+    
+    // Calculate corrected total if it's an old order with inflated bundle prices
+    const correctedTotal = (order.items.reduce((acc, item) => {
+        const isBundle = item.product?.name?.toLocaleLowerCase().includes('حزم') || 
+                        item.product?.name?.toLocaleLowerCase().includes('bundle') || 
+                        item.product?.name?.toLocaleLowerCase().includes('package');
+        
+        const basePrice = Number(item.product?.price) || 0;
+        const discountedPrice = item.product?.discountPercentage ? basePrice * (1 - item.product.discountPercentage / 100) : basePrice;
+        const displayPrice = isBundle ? discountedPrice : (Number(item.price) || 0);
+        
+        return acc + (displayPrice * (Number(item.quantity) || 0));
+    }, 0) - (Number(order.discountAmount) || 0));
+
+    const wasCorrected = Math.abs(correctedTotal - (Number(order.totalAmount) || 0)) > 1;
+
     const currentStatusIndex = STATUS_STEPS.findIndex(s => s.value === order.status);
     const isCancelled = order.status === 'CANCELLED';
 
@@ -329,81 +351,115 @@ export default function OrderDetailsPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border">
-                                        {order.items.map((item: any) => (
-                                            <tr key={item.id} className="hover:bg-white/5 transition-colors group">
-                                                <td className="px-6 py-6">
-                                                    <div className="flex items-start gap-5">
-                                                        <div className="size-24 rounded-2xl overflow-hidden bg-surface border border-white/10 shadow-neon-sm shrink-0 group-hover:scale-105 transition-transform duration-500">
-                                                            <img src={item.product?.mainImage} alt={item.product?.name} className="h-full w-full object-cover" />
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            <p className="font-black text-xl text-white group-hover:text-primary transition-colors">{item.product?.name}</p>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {item.surfaceColorName && (
-                                                                    <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
-                                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">لون السطح:</span>
-                                                                        <span className="text-xs font-black text-gray-200">{item.surfaceColorName}</span>
-                                                                        {item.surfaceColorImage && (
-                                                                            <div className="size-4 rounded-full border border-white/20 overflow-hidden shadow-neon-sm">
-                                                                                <img src={item.surfaceColorImage} alt={item.surfaceColorName} className="h-full w-full object-cover" />
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                                {item.edgeColorName && (
-                                                                    <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
-                                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">لون الأطراف:</span>
-                                                                        <span className="text-xs font-black text-gray-200">{item.edgeColorName}</span>
-                                                                        {item.edgeColorImage && (
-                                                                            <div className="size-4 rounded-full border border-white/20 overflow-hidden shadow-neon-sm">
-                                                                                <img src={item.edgeColorImage} alt={item.edgeColorName} className="h-full w-full object-cover" />
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                                {item.sizeName && (
-                                                                    <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
-                                                                        <span className="text-[10px] font-bold text-gray-500 uppercase">المقاس:</span>
-                                                                        <span className="text-xs font-black text-gray-200">{item.sizeName} {item.sizeDimensions && `(${item.sizeDimensions})`}</span>
+                                        {order.items.map((item: any) => {
+                                            const isBundle = item.product?.name?.toLocaleLowerCase().includes('حزم') || 
+                                                            item.product?.name?.toLocaleLowerCase().includes('bundle') || 
+                                                            item.product?.name?.toLocaleLowerCase().includes('package');
+                                            
+                                            const basePrice = item.product?.price || 0;
+                                            const discountedPrice = item.product?.discountPercentage ? basePrice * (1 - item.product.discountPercentage / 100) : basePrice;
+                                            const displayPrice = isBundle ? discountedPrice : item.price;
+                                            
+                                            return (
+                                                <tr key={item.id} className="hover:bg-white/5 transition-colors group">
+                                                    <td className="px-6 py-6 font-bold text-gray-100 italic">
+                                                        <div className="flex items-start gap-5">
+                                                            <div className="size-24 rounded-2xl overflow-hidden bg-surface border border-white/10 shadow-neon-sm shrink-0 group-hover:scale-105 transition-transform duration-500">
+                                                                <img src={item.product?.mainImage} alt={item.product?.name} className="h-full w-full object-cover" />
+                                                            </div>
+                                                            <div className="space-y-3">
+                                                                <p className="font-black text-xl text-white group-hover:text-primary transition-colors">{item.product?.name}</p>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {item.surfaceColorName && (
+                                                                        <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
+                                                                            <span className="text-[10px] font-bold text-gray-400 uppercase">لون السطح:</span>
+                                                                            <span className="text-xs font-black text-gray-200">{item.surfaceColorName}</span>
+                                                                            {item.surfaceColorImage && (
+                                                                                <div className="size-4 rounded-full border border-white/20 overflow-hidden shadow-neon-sm">
+                                                                                    <img src={item.surfaceColorImage} alt={item.surfaceColorName} className="h-full w-full object-cover" />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {item.edgeColorName && (
+                                                                        <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
+                                                                            <span className="text-[10px] font-bold text-gray-400 uppercase">لون الأطراف:</span>
+                                                                            <span className="text-xs font-black text-gray-200">{item.edgeColorName}</span>
+                                                                            {item.edgeColorImage && (
+                                                                                <div className="size-4 rounded-full border border-white/20 overflow-hidden shadow-neon-sm">
+                                                                                    <img src={item.edgeColorImage} alt={item.edgeColorName} className="h-full w-full object-cover" />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {item.sizeName && (
+                                                                        <div className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-2">
+                                                                            <span className="text-[10px] font-bold text-gray-400 uppercase">المقاس:</span>
+                                                                            <span className="text-xs font-black text-gray-200">{item.sizeName} {item.sizeDimensions && `(${item.sizeDimensions})`}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                {item.accessories && item.accessories.length > 0 && (
+                                                                    <div className="pt-2 space-y-2">
+                                                                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">الإكسسوارات الإضافية:</p>
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {item.accessories.map((acc: any, index: number) => {
+                                                                                const isAccFree = acc.price === 0 || isBundle;
+                                                                                return (
+                                                                                    <div key={index} className="bg-primary/5 border border-primary/20 rounded-lg px-2 py-1 flex items-center gap-2 transition-all hover:bg-primary/10">
+                                                                                        {acc.image && (
+                                                                                            <div className="size-6 rounded bg-surface border border-white/10 overflow-hidden">
+                                                                                                <img src={acc.image} alt={acc.name} className="h-full w-full object-cover" />
+                                                                                            </div>
+                                                                                        )}
+                                                                                        <span className="text-[10px] font-bold text-primary">+{acc.name}</span>
+                                                                                        <span className="text-[10px] font-black text-gray-400">
+                                                                                            ({isAccFree ? 'مشمول' : `${formatPrice(acc.price)} ${CURRENCY.SYMBOL}`})
+                                                                                        </span>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            {item.accessories && item.accessories.length > 0 && (
-                                                                <div className="pt-2 space-y-2">
-                                                                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">الإكسسوارات الإضافية:</p>
-                                                                    <div className="flex flex-wrap gap-2">
-                                                                        {item.accessories.map((acc: any) => (
-                                                                            <div key={acc.id} className="bg-primary/5 border border-primary/20 rounded-lg px-2 py-1 flex items-center gap-2 transition-all hover:bg-primary/10">
-                                                                                {acc.image && (
-                                                                                    <div className="size-6 rounded bg-surface border border-white/10 overflow-hidden">
-                                                                                        <img src={acc.image} alt={acc.name} className="h-full w-full object-cover" />
-                                                                                    </div>
-                                                                                )}
-                                                                                <span className="text-[10px] font-bold text-primary">+{acc.name}</span>
-                                                                                <span className="text-[10px] font-black text-gray-400">({acc.price} {CURRENCY.SYMBOL})</span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6 text-center font-mono font-bold text-gray-300">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            {isBundle && (
+                                                                <span className="text-[8px] bg-primary/10 text-primary px-1 rounded border border-primary/20 uppercase">حزمة</span>
+                                                            )}
+                                                            <span>{formatPrice(item.price)} {CURRENCY.SYMBOL}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6 text-center">
+                                                        <span className="inline-flex size-10 items-center justify-center bg-white/5 border border-white/10 rounded-xl font-black text-white text-lg shadow-neon-sm">
+                                                            {item.quantity}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-6 text-left">
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            {isBundle && (
+                                                                <span className="text-[8px] bg-primary/10 text-primary px-1 rounded border border-primary/20 uppercase">حزمة</span>
+                                                            )}
+                                                            <div className={cn(
+                                                                "font-black text-2xl font-mono italic",
+                                                                (isBundle && Math.abs(item.price - displayPrice) > 1) ? "text-yellow-500" : "text-primary"
+                                                            )}>
+                                                                {formatPrice(displayPrice * item.quantity)} <span className="text-sm opacity-50">{CURRENCY.SYMBOL}</span>
+                                                            </div>
+                                                            {isBundle && Math.abs(item.price - displayPrice) > 1 && (
+                                                                <span className="text-[10px] text-yellow-500/70 italic">تم تصحيح العرض من {formatPrice(item.price)}</span>
+                                                            )}
+                                                            {isBundle && (
+                                                                <span className="text-[8px] text-gray-500 uppercase tracking-widest italic">سعر كامل للحزمة</span>
                                                             )}
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-6 text-center font-mono font-bold text-gray-300">
-                                                    {formatPrice(item.price)} {CURRENCY.SYMBOL}
-                                                </td>
-                                                <td className="px-6 py-6 text-center">
-                                                    <span className="inline-flex size-10 items-center justify-center bg-white/5 border border-white/10 rounded-xl font-black text-white text-lg shadow-neon-sm">
-                                                        {item.quantity}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-6 text-left">
-                                                    <div className="font-black text-2xl text-primary font-mono italic">
-                                                        {formatPrice(item.price * item.quantity)} <span className="text-sm opacity-50">{CURRENCY.SYMBOL}</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
@@ -466,13 +522,26 @@ export default function OrderDetailsPage() {
                                     </div>
                                     <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-6" />
                                     <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-1">المجموع النهائي</span>
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-1">المجموع النهائي</span>
+                                            {Math.abs(correctedTotal - order.totalAmount) > 1 && (
+                                                <span className="text-[9px] text-yellow-500 italic mb-1">تم تصحيح المجموع</span>
+                                            )}
+                                        </div>
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-5xl font-black italic bg-gradient-to-r from-white to-primary bg-clip-text text-transparent drop-shadow-neon">
-                                                {formatPrice(order.totalAmount)}
+                                            <span className={cn(
+                                                "text-5xl font-black italic bg-gradient-to-r bg-clip-text text-transparent drop-shadow-neon",
+                                                Math.abs(correctedTotal - (Number(order.totalAmount) || 0)) > 1 ? "from-yellow-400 to-yellow-600" : "from-white to-primary"
+                                            )}>
+                                                {formatPrice(correctedTotal)}
                                             </span>
                                             <span className="text-sm font-black text-primary uppercase italic">{CURRENCY.SYMBOL}</span>
                                         </div>
+                                        {Math.abs(correctedTotal - order.totalAmount) > 1 && (
+                                            <p className="text-[10px] text-yellow-500/50 italic mt-1 text-left">
+                                                المجموع المخزن: {formatPrice(order.totalAmount)} {CURRENCY.SYMBOL}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
